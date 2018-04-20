@@ -44,6 +44,27 @@ app.get('/api/cheeses', (req, res) => {
     });
 });
 
+/* ========== POST/CREATE NEW ITEMS ========== */
+app.post('/api/cheeses', (req, res) => {
+  const { name } = req.body;
+  const newItem = { name };
+
+  /***** Never trust users - validate input *****/
+  if (!name) {
+    const message = 'Missing `name` in request body';
+    console.error(message);
+    return res.status(400).send(message);
+  }
+  
+  Cheese.create(newItem)
+    .then(result => {
+      res.location(`${req.originalUrl}/${newItem.id}`).status(201).json(result);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({message: 'Internal server error'});
+    });
+});
 
 function runServer(port = PORT) {
   const server = app
