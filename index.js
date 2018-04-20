@@ -16,6 +16,7 @@ app.use(
   })
 );
 
+//who can access our server
 app.use(
   cors({
     origin: CLIENT_ORIGIN
