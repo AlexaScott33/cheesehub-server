@@ -24,11 +24,18 @@ app.use(
 );
 
 //who can access our server
-app.use(
-  cors({
-    origin: CLIENT_ORIGIN
-  })
-);
+// app.use(
+//   cors({
+//     origin: CLIENT_ORIGIN
+//   })
+// );
+
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE');
+  next();
+});
 
 /* ========== GET/READ ALL ITEMS ========== */
 app.get('/api/cheeses', (req, res) => {
@@ -45,20 +52,24 @@ app.get('/api/cheeses', (req, res) => {
 });
 
 /* ========== POST/CREATE NEW ITEMS ========== */
-app.post('/api/cheeses', (req, res) => {
+app.post('/api/cheeses', (req, res, next) => {
   const { name } = req.body;
   const newItem = { name };
+  //console.log(name);
 
   /***** Never trust users - validate input *****/
   if (!name) {
-    const message = 'Missing `name` in request body';
-    console.error(message);
-    return res.status(400).send(message);
+    const err = new Error('Missing `name` in request body');
+    err.status = 400;
+    return next(err);
   }
-  
+
   Cheese.create(newItem)
-    .then(result => {
-      res.location(`${req.originalUrl}/${newItem.id}`).status(201).json(result);
+    .then(() => {
+      Cheese.find()
+        .then(results => {
+          res.json(results);
+        });
     })
     .catch(err => {
       console.error(err);
