@@ -1,14 +1,21 @@
 'use strict';
 
+const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+
+const Cheese = require('./models/cheese');
 
 const { PORT, CLIENT_ORIGIN } = require('./config');
 const { dbConnect } = require('./db-mongoose');
 // const {dbConnect} = require('./db-knex');
 
 const app = express();
+app.use(bodyParser.json());
 
 app.use(
   morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', {
@@ -23,28 +30,18 @@ app.use(
   })
 );
 
-app.use('/api/cheeses', (req, res) => {
-  const cheeses = [
-    'Bath Blue',
-    'Barkham Blue',
-    'Buxton Blue',
-    'Cheshire Blue',
-    'Devon Blue',
-    'Dorset Blue Vinney',
-    'Dovedale',
-    'Exmoor Blue',
-    'Harbourne Blue',
-    'Lanark Blue',
-    'Lymeswold',
-    'Oxford Blue',
-    'Shropshire Blue',
-    'Stichelton',
-    'Stilton',
-    'Blue Wensleydale',
-    'Yorkshire Blue'
-  ];
+/* ========== GET/READ ALL ITEMS ========== */
+app.get('/api/cheeses', (req, res) => {
+  // console.log('making get request');
 
-  res.json(cheeses);
+  Cheese.find()
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({message: 'Internal server error'});
+    });
 });
 
 
